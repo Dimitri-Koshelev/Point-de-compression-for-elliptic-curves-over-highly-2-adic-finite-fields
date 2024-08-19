@@ -1,0 +1,159 @@
+// Section 2.2
+F := Rationals();
+F<x0,y0> := FunctionField(F, 2);
+F<a> := FunctionField(F);
+b := y0^2 - x0^3 - a*x0;
+Df := -16*(4*a^3 + 27*b^2);
+
+PR<x> := PolynomialRing(F);
+f := x^3 + a*x + b;
+F<x1> := ext<F | f>;
+a2 := 3*x1;
+a4 := 3*x1^2 + a;
+Dg := a2^2 - 4*a4;
+Df eq 2^4*a4^2*Dg;
+
+////////////////////
+
+A2xy<x,y> := AffinePlane(F);
+f := x^3 + a*x + b;
+E := Curve(A2xy, y^2 - f);
+P0 := E ! [x0, y0];
+P1 := E ! [x1, 0];
+
+A2ts<t,s> := AffinePlane(F);
+h := t^4 - 6*x0*t^2 - 8*y0*t - (4*a + 3*x0^2);
+C := Curve(A2ts, s^2 - h);
+
+T := (y + y0)/(x - x0);
+X := (t^2 + s - x0)/2;
+psi := map<E -> C | [T, 2*x - T^2 + x0]>;
+psiInv := map<C -> E | [X, (X - x0)*t - y0]>;
+psi*psiInv eq IdentityMap(E);
+psiInv*psi eq IdentityMap(C);
+
+h := UnivariatePolynomial(h);
+Dh := Discriminant(h);
+Dh eq 2^8*Df;
+
+/////////////////////
+
+g := x^2 + a2*x + a4;
+Epr := Curve(A2xy, y^2 - x*g);
+tau := map<E -> Epr | [x - x1, y]>;
+tauInv := map<Epr -> E | [x + x1, y]>;
+tau*tauInv eq IdentityMap(E);
+tauInv*tau eq IdentityMap(Epr);
+
+F<t0> := ext<F | h>;
+x0pr := x0 - x1;
+p := x^4 - 4*x0pr*x^3 - 2*(2*a2*x0pr + a4)*x^2 - 4*a4*x0pr*x + a4^2;
+p := UnivariatePolynomial(p);
+theta := (t0^2 - x0)/2;
+Evaluate(p, theta - x1) eq 0;
+
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Section 2.3
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+// Lemma 4
+F := Rationals();
+F<sc,h,g> := FunctionField(F, 3);
+c := sc^2;
+
+A1<U> := AffineSpace(F, 1);
+A2<u,v> := AffinePlane(F);
+Sh := Curve(A2, u^2 - c*v^2 - h);
+ShPr := Curve(A2, u^2 - v^2 - h);
+Th := Curve(A2, u*v - h);
+
+chih := map<Sh -> ShPr | [u, sc*v]>;
+phih := map<ShPr -> Th | [u + v, u - v]>;
+pruh := map<Th -> A1 | [u]>;
+
+////////////////////////
+
+Shg := Curve(A2, u^2 - c*v^2 - h*g);
+ShgPr := Curve(A2, u^2 - v^2 - h*g);
+Thg := Curve(A2, u*v - h*g);
+
+chihgInv := map<ShgPr -> Shg | [u, v/sc]>;
+phihgInv := map<Thg -> ShgPr | [(u + v)/2, (u - v)/2]>;
+pruhgInv := map<A1 -> Thg | [U, h*g/U]>;
+
+///////////////////////
+
+bl := chih*phih*pruh*pruhgInv*phihgInv*chihgInv;
+bl eq map<Sh -> Shg | [
+	((1 + g)*u + sc*(1 - g)*v) / 2,
+	((1 - g)*u + sc*(1 + g)*v) / (2*sc)
+]>;
+
+M := Matrix(F, 2, 2, [
+	(1 + g)/2, sc*(1 - g)/2,
+	(1 - g)/(2*sc), (1 + g)/2
+]);
+Determinant(M) eq g;
+
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+// Corollary 3
+F := Rationals();
+F<sc,t,h,T1,T2,N1,N2> := FunctionField(F, 7);
+c := sc^2;
+g1 := t^2 - T1*t + N1;
+g2 := t^2 - T2*t + N2;
+g := g1*g2;
+
+A2<u,v> := AffinePlane(F);
+Sh := Curve(A2, u^2 - c*v^2 - h);
+Shg1 := Curve(A2, u^2 - c*v^2 - h*g1);
+Shg := Curve(A2, u^2 - c*v^2 - h*g);
+
+////////////////////
+
+blg1pl := map<Sh -> Shg1 | [
+	((1 + g1)*u + sc*(1 - g1)*v) / 2,
+	((1 - g1)*u + sc*(1 + g1)*v) / (2*sc)
+]>;
+blg2min := map<Shg1 -> Shg | [
+	((1 + g2)*u - sc*(1 - g2)*v) / 2,
+	((1 - g2)*u - sc*(1 + g2)*v) / (-2*sc)
+]>;
+blg := blg1pl*blg2min;
+
+rho := sc*((T1 - T2)*t - (N1 - N2));
+varrho := 2*t^2 - (T1 + T2)*t + (N1 + N2);
+blg eq map<Sh -> Shg | [
+	(varrho*u + rho*v) / 2,
+	(rho*u + c*varrho*v) / (2*c)
+]>;
+
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+
+// The projection prQ0 from the point Q0
+F := Rationals();
+F<c> := FunctionField(F);
+A1<r> := AffineSpace(F, 1);
+A2<u,v> := AffinePlane(F);
+S1 := Curve(A2, u^2 - c*v^2 - 1);
+
+prQ0 := map<S1 -> A1 | [c*v/(1 - u)]>;
+prQ0Inv := map<A1 -> S1 | [
+	(r^2 + c) / (r^2 - c),
+	-2*r / (r^2 - c)
+]>;
+prQ0*prQ0Inv eq IdentityMap(S1);
+prQ0Inv*prQ0 eq IdentityMap(A1);
